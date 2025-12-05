@@ -1,4 +1,5 @@
 packages:
+  - browser-extension
   - native-host
 
 onlyBuiltDependencies:
