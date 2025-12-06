@@ -13,5 +13,8 @@
     "esbuild": "0.27.1",
     "postject": "1.0.0-alpha.6",
     "shared-types": "link:../shared-types"
+  },
+  "dependencies": {
+    "native-messaging": "link:../native-messaging"
   }
 }

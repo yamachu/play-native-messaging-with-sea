@@ -1,9 +1,9 @@
-import type { ToExtensionResponse, ToNativeMessage } from "shared-types";
 import {
   readMessage,
   toBufferedMessage,
   writeMessage,
-} from "./native-messaging.mjs";
+} from "native-messaging/src/index.js";
+import type { ToExtensionResponse, ToNativeMessage } from "shared-types";
 
 async function handleMessage(
   message: ToNativeMessage
@@ -24,7 +24,7 @@ function reverseString(str: string): string {
 
 async function main(): Promise<void> {
   try {
-    const message = await readMessage();
+    const message = await readMessage<ToNativeMessage>();
 
     if (message === null) {
       return;

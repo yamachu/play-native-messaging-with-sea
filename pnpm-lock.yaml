@@ -38,6 +38,10 @@ importers:
         version: 0.20.11(@types/node@24.10.1)(jiti@2.6.1)(rollup@4.53.3)
 
   native-host:
+    dependencies:
+      native-messaging:
+        specifier: link:../native-messaging
+        version: link:../native-messaging
     devDependencies:
       '@types/node':
         specifier: 24.10.1
