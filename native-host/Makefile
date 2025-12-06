@@ -14,6 +14,7 @@ else
 endif
 endif
 
+EXECUTABLE_BASE = $(EXECUTABLE).org
 NATIVE_HOST_NAME = $(VITE_NATIVE_HOST_NAME)
 
 .PHONY: setup build clean _codesign _remove_sign install _copy/manifest.json _copy/$(EXECUTABLE)
@@ -21,10 +22,13 @@ NATIVE_HOST_NAME = $(VITE_NATIVE_HOST_NAME)
 setup:
 	pnpm install
 
-build: dist/index.cjs dist/index.blob $(EXECUTABLE)
+build: $(EXECUTABLE)
+
+$(EXECUTABLE): dist/index.cjs dist/index.blob $(EXECUTABLE_BASE)
+	cp $(EXECUTABLE_BASE) $(EXECUTABLE)
 	pnpm exec postject $(EXECUTABLE) NODE_SEA_BLOB dist/index.blob \
 	--sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 \
-	--overwrite $(POSTJECT_OPTIONS)
+	$(POSTJECT_OPTIONS)
 	$(MAKE) _codesign
 
 _codesign:
@@ -42,15 +46,15 @@ dist/index.blob: dist/index.cjs
 
 # https://nodejs.org/api/single-executable-applications.html
 # command -v node が使われいるが、nodenv とかで切り替えている場合、実行ファイルを取得できないため、全部 copyFileSync に変更
-$(EXECUTABLE):
+$(EXECUTABLE_BASE):
 	node -e "require('fs').copyFileSync(process.execPath, '$@')"
 	$(MAKE) _remove_sign
 
 _remove_sign:
 ifeq ($(OS),Windows_NT)
-# 	signtool remove /s $(EXECUTABLE)
+# 	signtool remove /s $(EXECUTABLE_BASE)
 else ifeq ($(shell uname -s),Darwin)
-	codesign --remove-signature $(EXECUTABLE)
+	codesign --remove-signature $(EXECUTABLE_BASE)
 endif
 
 install: _copy/manifest.json _copy/$(EXECUTABLE)
