@@ -1,3 +1,6 @@
+include ../browser-extension/.env
+export
+
 SRCS = $(wildcard src/*.ts)
 ifeq ($(OS),Windows_NT)
 	EXECUTABLE = dist/index.exe
@@ -11,7 +14,9 @@ else
 endif
 endif
 
-.PHONY: build clean _codesign _remove_sign
+NATIVE_HOST_NAME = $(VITE_NATIVE_HOST_NAME)
+
+.PHONY: build clean _codesign _remove_sign install _copy/manifest.json _copy/$(EXECUTABLE)
 
 build: dist/index.cjs dist/index.blob $(EXECUTABLE)
 	pnpm exec postject $(EXECUTABLE) NODE_SEA_BLOB dist/index.blob \
@@ -44,5 +49,35 @@ else ifeq ($(shell uname -s),Darwin)
 	codesign --remove-signature $(EXECUTABLE)
 endif
 
+install: _copy/manifest.json _copy/$(EXECUTABLE)
+
+manifest.json:
+	$(eval EXTENSION_ORIGIN := $(shell make -C ../browser-extension id))
+	node -e " \
+		const m = require('./manifest.template.json'); \
+		const os = require('os'); \
+		const { resolve } = require('path'); \
+		m.path = resolve(os.homedir(), '$(NATIVE_HOST_NAME)'); \
+		m.name = '$(NATIVE_HOST_NAME)'; \
+		m.allowed_origins = ['chrome-extension://$(EXTENSION_ORIGIN)/']; \
+		console.log(JSON.stringify(m, null, 2))" > manifest.json
+
+_copy/manifest.json: manifest.json
+ifeq ($(OS),Windows_NT)
+# .reg file...
+# https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging?hl=ja#native-messaging-host-location
+else
+ifeq ($(shell uname -s),Darwin)
+	mkdir -p $(HOME)/Library/Application\ Support/Google/Chrome/NativeMessagingHosts
+	cp manifest.json $(HOME)/Library/Application\ Support/Google/Chrome/NativeMessagingHosts/$(NATIVE_HOST_NAME).json
+else
+	mkdir -p $(HOME)/.config/google-chrome/NativeMessagingHosts
+	cp manifest.json $(HOME)/.config/google-chrome/NativeMessagingHosts/$(NATIVE_HOST_NAME).json
+endif
+endif
+
+_copy/$(EXECUTABLE):
+	cp $(EXECUTABLE) $(HOME)/$(NATIVE_HOST_NAME)
+
 clean:
-	@rm -rf dist
+	@rm -rf dist manifest.json
