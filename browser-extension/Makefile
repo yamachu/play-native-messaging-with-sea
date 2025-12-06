@@ -1,4 +1,7 @@
-.PHONY: key id
+.PHONY: key id setup
+
+setup: .env
+	pnpm install
 
 key: key.pem
 	@openssl rsa -in $< -pubout -outform DER | openssl base64 -A

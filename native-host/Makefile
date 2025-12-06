@@ -16,11 +16,15 @@ endif
 
 NATIVE_HOST_NAME = $(VITE_NATIVE_HOST_NAME)
 
-.PHONY: build clean _codesign _remove_sign install _copy/manifest.json _copy/$(EXECUTABLE)
+.PHONY: setup build clean _codesign _remove_sign install _copy/manifest.json _copy/$(EXECUTABLE)
+
+setup:
+	pnpm install
 
 build: dist/index.cjs dist/index.blob $(EXECUTABLE)
 	pnpm exec postject $(EXECUTABLE) NODE_SEA_BLOB dist/index.blob \
-	--sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 $(POSTJECT_OPTIONS)
+	--sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 \
+	--overwrite $(POSTJECT_OPTIONS)
 	$(MAKE) _codesign
 
 _codesign:
