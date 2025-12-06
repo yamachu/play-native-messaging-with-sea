@@ -1,29 +1,27 @@
 // #region: frontend to background
-type MessageType<T extends string, P> = {
+interface BaseMessageType<T extends string> {
   type: T;
-  payload: P;
-};
+}
 
-export type ReverseStringMessage = MessageType<
-  "REVERSE_STRING",
-  { text: string }
->;
+interface ReverseStringMessage extends BaseMessageType<"REVERSE_STRING"> {
+  text: string;
+}
 
 export type ExtensionMessage = ReverseStringMessage | never;
 // #endregion
 
 // #region: background to frontend
-export interface ReverseStringSuccessResponse {
+interface ReverseStringSuccessResponse {
   success: true;
   reversed: string;
 }
 
-export interface ReverseStringErrorResponse {
+interface ReverseStringErrorResponse {
   success: false;
   error: string;
 }
 
-export type ReverseStringResponse =
+type ReverseStringResponse =
   | ReverseStringSuccessResponse
   | ReverseStringErrorResponse;
 // #endregion

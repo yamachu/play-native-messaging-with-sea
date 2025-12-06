@@ -24,7 +24,7 @@ export default defineBackground(() => {
         browser.runtime
           .sendNativeMessage(NATIVE_HOST_NAME, {
             action: "reverse",
-            text: message.payload.text,
+            text: message.text,
           } satisfies ToNativeReverseMessage)
           .then((response: ToExtensionReverseResponse) => {
             console.log("Native host response:", response);

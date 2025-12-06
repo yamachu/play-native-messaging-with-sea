@@ -20,9 +20,7 @@ async function reverseAction(
   try {
     const response = await sendTypedMessage({
       type: "REVERSE_STRING",
-      payload: {
-        text,
-      },
+      text,
     });
 
     if (response.success) {

@@ -1,18 +1,21 @@
 // #region extension to host
-export type ToNativeReverseMessage = {
-  action: "reverse";
+interface ToNativeBaseMessage<T extends string> {
+  action: T;
+}
+
+export interface ToNativeReverseMessage extends ToNativeBaseMessage<"reverse"> {
   text: string;
-};
+}
 
 export type ToNativeMessage = ToNativeReverseMessage | never;
 // #endregion
 
 // #region host to extension
-export type ToExtensionReverseSuccessResponse = {
+type ToExtensionReverseSuccessResponse = {
   reversed: string;
 };
 
-export type ToExtensionErrorResponse = {
+type ToExtensionErrorResponse = {
   error: string;
 };
 
