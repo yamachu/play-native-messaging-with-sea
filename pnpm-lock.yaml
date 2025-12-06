@@ -52,6 +52,12 @@ importers:
         specifier: link:../shared-types
         version: link:../shared-types
 
+  native-messaging:
+    devDependencies:
+      '@types/node':
+        specifier: 24.10.1
+        version: 24.10.1
+
   shared-types: {}
 
 packages:

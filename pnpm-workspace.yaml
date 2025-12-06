@@ -1,6 +1,7 @@
 packages:
   - browser-extension
   - native-host
+  - native-messaging
   - shared-types
 
 onlyBuiltDependencies:
