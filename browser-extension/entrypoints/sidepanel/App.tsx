@@ -1,34 +1,78 @@
-import { useState } from 'react';
-import reactLogo from '@/assets/react.svg';
-import wxtLogo from '/wxt.svg';
-import './App.css';
+import { useActionState } from "react";
+import { sendTypedMessage } from "@/types/messaging";
+import "./App.css";
+
+type State = {
+  result: string;
+  error: string | null;
+};
+
+async function reverseAction(
+  _prevState: State,
+  formData: FormData
+): Promise<State> {
+  const text = formData.get("text") as string;
+
+  if (!text?.trim()) {
+    return { result: "", error: "テキストを入力してください" };
+  }
+
+  try {
+    const response = await sendTypedMessage({
+      type: "REVERSE_STRING",
+      payload: {
+        text,
+      },
+    });
+
+    if (response.success) {
+      return { result: response.reversed, error: null };
+    } else {
+      return { result: "", error: response.error };
+    }
+  } catch (err) {
+    return {
+      result: "",
+      error: err instanceof Error ? err.message : "Failed to send message",
+    };
+  }
+}
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [state, formAction, isPending] = useActionState(reverseAction, {
+    result: "",
+    error: null,
+  });
 
   return (
-    <>
-      <div>
-        <a href="https://wxt.dev" target="_blank">
-          <img src={wxtLogo} className="logo" alt="WXT logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>WXT + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the WXT and React logos to learn more
+    <div className="app">
+      <h1>String Reverser</h1>
+      <p className="description">
+        Native Messaging を使用して文字列を反転します
       </p>
-    </>
+
+      <form action={formAction} className="form">
+        <input
+          type="text"
+          name="text"
+          placeholder="文字列を入力してください"
+          className="input"
+          disabled={isPending}
+        />
+        <button type="submit" className="button" disabled={isPending}>
+          {isPending ? "処理中..." : "反転"}
+        </button>
+      </form>
+
+      {state.error && <div className="error">{state.error}</div>}
+
+      {state.result && (
+        <div className="result">
+          <h2>結果:</h2>
+          <p className="result-text">{state.result}</p>
+        </div>
+      )}
+    </div>
   );
 }
 
