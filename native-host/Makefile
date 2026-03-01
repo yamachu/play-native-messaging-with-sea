@@ -27,12 +27,11 @@ setup:
 build: $(EXECUTABLE)
 
 ifeq ($(NODE_GE_25_5),1)
-$(EXECUTABLE): dist/index.cjs
-	node --build-sea sea-config.json
+$(EXECUTABLE): dist/index.blob
 	cp dist/index.blob $(EXECUTABLE)
 	$(MAKE) _codesign
 else
-$(EXECUTABLE): dist/index.cjs dist/index.blob $(EXECUTABLE_BASE)
+$(EXECUTABLE): dist/index.blob $(EXECUTABLE_BASE)
 	cp $(EXECUTABLE_BASE) $(EXECUTABLE)
 	pnpm exec postject $(EXECUTABLE) NODE_SEA_BLOB dist/index.blob \
 	--sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 \
@@ -50,8 +49,13 @@ endif
 dist/index.cjs: $(SRCS)
 	pnpm build
 
+ifeq ($(NODE_GE_25_5),1)
+dist/index.blob: dist/index.cjs
+	node --build-sea sea-config.json
+else
 dist/index.blob: dist/index.cjs
 	node --experimental-sea-config sea-config.json
+endif
 
 # https://nodejs.org/api/single-executable-applications.html
 # command -v node が使われいるが、nodenv とかで切り替えている場合、実行ファイルを取得できないため、全部 copyFileSync に変更
