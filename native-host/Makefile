@@ -1,6 +1,8 @@
 include ../browser-extension/.env
 export
 
+NODE_GE_25_5 := $(shell node -p "v=process.versions.node.split('.');(v[0]>25||(v[0]==25&&v[1]>=5))?1:0")
+
 SRCS = $(wildcard src/*.ts)
 ifeq ($(OS),Windows_NT)
 	EXECUTABLE = dist/index.exe
@@ -24,12 +26,19 @@ setup:
 
 build: $(EXECUTABLE)
 
+ifeq ($(NODE_GE_25_5),1)
+$(EXECUTABLE): dist/index.cjs
+	node --build-sea sea-config.json
+	cp dist/index.blob $(EXECUTABLE)
+	$(MAKE) _codesign
+else
 $(EXECUTABLE): dist/index.cjs dist/index.blob $(EXECUTABLE_BASE)
 	cp $(EXECUTABLE_BASE) $(EXECUTABLE)
 	pnpm exec postject $(EXECUTABLE) NODE_SEA_BLOB dist/index.blob \
 	--sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 \
 	$(POSTJECT_OPTIONS)
 	$(MAKE) _codesign
+endif
 
 _codesign:
 ifeq ($(OS),Windows_NT)
